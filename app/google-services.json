@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "120251031689",
+    "project_id": "nownews-52691",
+    "storage_bucket": "nownews-52691.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:120251031689:android:1109912ff21d2305a32658",
+        "android_client_info": {
+          "package_name": "com.example.nownews"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAP1QvMR24g7jLhUqWakIHquXdb3xQ0uPY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
