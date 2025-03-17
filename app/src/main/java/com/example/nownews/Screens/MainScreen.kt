@@ -1,11 +1,13 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.nownews.Screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,7 +27,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,24 +36,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
-import coil3.compose.rememberAsyncImagePainter
 import com.example.nownews.DataModel.Article
-import com.example.nownews.R
 import com.example.nownews.ViewModelStructure.NewsViewModel
+import androidx.navigation.NavController
 
-@Preview
 @Composable
-fun MainScreen(viewModel: NewsViewModel = viewModel()) {
+fun MainScreen(viewModel: NewsViewModel = viewModel(), navController: NavController) {
     val newsList by viewModel.newsState.collectAsState()
     Scaffold(
         topBar = {
@@ -73,7 +70,7 @@ fun MainScreen(viewModel: NewsViewModel = viewModel()) {
                 if (newsList?.articles?.isNotEmpty() == true) {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                         items(newsList!!.articles) { article ->
-                            NewsItem(article)
+                            NewsItem(article,navController)
                         }
                     }
                 }
@@ -86,14 +83,32 @@ fun MainScreen(viewModel: NewsViewModel = viewModel()) {
 }
 
 @Composable
-fun NewsItem(data: Article) {
-    Card(modifier = Modifier.fillMaxWidth().height(150.dp).padding(12.dp)) {
+fun NewsItem(data: Article,navController: NavController) {
+    val imageUrl = data.image.toString()
+    Card(modifier = Modifier
+        .fillMaxWidth()
+        .height(150.dp)
+        .padding(12.dp)
+        .clickable{
+            navController.navigate("newsViewScreen/${data.url}")
+        }
+    )
+    {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            AsyncImage(model = data.image ?: R.drawable.news, contentDescription = null, contentScale = ContentScale.Fit)
-            Column(modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 8.dp, bottom = 10.dp, top = 8.dp)) {
-                Text(text = data.title?:"", fontSize = 16.sp, fontFamily = FontFamily.Serif)
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(100.dp)
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 8.dp, bottom = 10.dp, top = 8.dp)
+            ) {
+                Text(text = data.title ?: "", fontSize = 16.sp, fontFamily = FontFamily.Serif)
                 Spacer(modifier = Modifier.weight(1f))
-                Text(text = data.url?:"", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                Text(text = data.url ?: "", fontSize = 15.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -104,7 +119,9 @@ fun NewsItem(data: Article) {
 fun ActionBar(onClicks:(String)-> Unit) {
     var isExpanded by remember { mutableStateOf(false) }
     val listDropDownItems = listOf<String>("Log out", "Settings Screen", "Favourite Screen")
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp, horizontal = 10.dp),verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .padding(vertical = 10.dp, horizontal = 10.dp),verticalAlignment = Alignment.CenterVertically) {
         Text(text = "Now News", fontFamily = FontFamily.Serif,
             fontSize = 25.sp, fontWeight = FontWeight.Bold,
             color = Color.Red,textAlign = TextAlign.Center)
@@ -134,7 +151,9 @@ fun ActionBar(onClicks:(String)-> Unit) {
 @Composable
 fun NewsCategories(onlClick:(String) -> Unit) {
     val list  = listOf("GENERAL", "BUSINESS" ,"TECHNOLOGY", "ENTERTAINMENT", "SPORTS", "SCIENCE", "HEALTH")
-    Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())) {
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .horizontalScroll(rememberScrollState())) {
         list.forEach {category->
             Button(
                 modifier = Modifier.padding(horizontal = 10.dp),
