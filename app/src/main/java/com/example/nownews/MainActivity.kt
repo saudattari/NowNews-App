@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
+import com.example.nownews.Navigation.NavigationController
 import com.example.nownews.ui.theme.NowNewsTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,8 +21,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NowNewsTheme {
-//                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-//                }
+                val navController = rememberNavController()
+                NavigationController(navController)
             }
         }
     }
