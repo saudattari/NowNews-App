@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.example.nownews.Screens
 
 import androidx.compose.foundation.BorderStroke
@@ -20,6 +18,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -35,10 +34,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +49,11 @@ import coil3.compose.AsyncImage
 import com.example.nownews.DataModel.Article
 import com.example.nownews.ViewModelStructure.NewsViewModel
 import androidx.navigation.NavController
+import coil3.compose.rememberAsyncImagePainter
+import com.example.nownews.DataModel.NewsResponse
+import com.example.nownews.R
+import kotlinx.coroutines.flow.MutableStateFlow
+import java.util.Locale
 
 @Composable
 fun MainScreen(viewModel: NewsViewModel = viewModel(), navController: NavController) {
@@ -63,9 +70,9 @@ fun MainScreen(viewModel: NewsViewModel = viewModel(), navController: NavControl
         content = {innerPadding->
             Column(modifier = Modifier.padding(innerPadding)) {
                 Spacer(modifier = Modifier.height(12.dp))
-                NewsCategories(){
-                    viewModel.fetchNews("us", "992786c2b3ce3b6f6afea6acf66d4420")
-                }
+                NewsCategories(onClick = { post->
+                    viewModel.fetchNews(post.lowercase(Locale.ROOT), "pk", "992786c2b3ce3b6f6afea6acf66d4420")
+                })
                 Spacer(modifier = Modifier.height(10.dp))
                 if (newsList?.articles?.isNotEmpty() == true) {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
@@ -75,28 +82,33 @@ fun MainScreen(viewModel: NewsViewModel = viewModel(), navController: NavControl
                     }
                 }
                 else{
-                    Text(text = "Non data")
+                    if (viewModel.isLoading.collectAsState().value){
+                        CircularProgressIndicator(strokeWidth = 2.dp,strokeCap = StrokeCap.Round, modifier = Modifier.align(Alignment.CenterHorizontally), color = Color.Red)
+                    }
                 }
 
             }
         })
 }
 
+
+
 @Composable
 fun NewsItem(data: Article,navController: NavController) {
-    val imageUrl = data.image.toString()
+    val imageUrl = data.image ?:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUrgu4a7W_OM8LmAuN7Prk8dzWXm7PVB_FmA&s"
+
+    val painter = if(data.image != null){rememberAsyncImagePainter(data.image)}else{R.drawable.news}
     Card(modifier = Modifier
         .fillMaxWidth()
-        .height(150.dp)
         .padding(12.dp)
-        .clickable{
+        .clickable {
             navController.navigate("newsViewScreen/${data.url}")
         }
     )
     {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             AsyncImage(
-                model = imageUrl,
+                model = painter,
                 contentDescription = null,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.size(100.dp)
@@ -108,7 +120,7 @@ fun NewsItem(data: Article,navController: NavController) {
             ) {
                 Text(text = data.title ?: "", fontSize = 16.sp, fontFamily = FontFamily.Serif)
                 Spacer(modifier = Modifier.weight(1f))
-                Text(text = data.url ?: "", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                Text(text = data.source?.name ?: "", fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 2)
             }
         }
     }
@@ -149,15 +161,17 @@ fun ActionBar(onClicks:(String)-> Unit) {
 
 
 @Composable
-fun NewsCategories(onlClick:(String) -> Unit) {
-    val list  = listOf("GENERAL", "BUSINESS" ,"TECHNOLOGY", "ENTERTAINMENT", "SPORTS", "SCIENCE", "HEALTH")
+fun NewsCategories(onClick: (String) -> Unit) {
+    val list  = listOf("GENERAL", "BUSINESS" ,"TECHNOLOGY", "ENTERTAINMENT", "SPORTS", "SCIENCE", "HEALTH","WORLD")
     Row(modifier = Modifier
         .fillMaxWidth()
         .horizontalScroll(rememberScrollState())) {
         list.forEach {category->
             Button(
                 modifier = Modifier.padding(horizontal = 10.dp),
-                onClick = { onlClick(category) },
+                onClick = {
+                    onClick(category)
+                },
                 border = BorderStroke(1.dp, Color.Red),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = Color.Red))
             {

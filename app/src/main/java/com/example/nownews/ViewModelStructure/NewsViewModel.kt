@@ -12,18 +12,22 @@ import kotlinx.coroutines.launch
 
 class NewsViewModel(): ViewModel() {
     private var _newsState = MutableStateFlow<NewsResponse?>(null)
-    val newsState: StateFlow<NewsResponse?> = _newsState
+    var newsState: StateFlow<NewsResponse?> = _newsState
+
+    val isLoading = MutableStateFlow(false)
 
 
     init {
-        fetchNews("us", "992786c2b3ce3b6f6afea6acf66d4420" )
+        fetchNews("general","pk", "992786c2b3ce3b6f6afea6acf66d4420" )
     }
 
-    fun fetchNews( country:String, api: String){
+    fun fetchNews( category: String,country:String, api: String){
         viewModelScope.launch {
+            isLoading.value = true
             try{
-                val response = RetrofitInstance.api.getTopHeadlines("general",country,api)
+                val response = RetrofitInstance.api.getTopHeadlines(category,country,api)
                 _newsState.value = response
+                isLoading.value = false
 //                Toast.makeText(context, "${response.status}", Toast.LENGTH_SHORT).show()
             }catch (e: Exception){
 //                Toast.makeText(context, "${e.message}, ${e.localizedMessage}", Toast.LENGTH_SHORT).show(

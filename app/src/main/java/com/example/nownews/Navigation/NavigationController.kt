@@ -29,7 +29,7 @@ fun NavigationController(navController: NavHostController) {
             MainScreen(viewModel, navController)
         }
         composable ("newsViewScreen/{url}"){
-            val url = it.arguments?.getString("url") ?: "https://cdn2.iconfinder.com/data/icons/symbol-blue-set-3/100/Untitled-1-94-1024.png"
+            val url = it.arguments?.getString("url") ?:""
             NewsViewScreen(url)
         }
     }
