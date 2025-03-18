@@ -94,7 +94,7 @@ fun MainScreen(viewModel: NewsViewModel = viewModel(), navController: NavControl
                         }
                     }
                 else{
-                   Text(text = "Data Not Found or Check your Connection", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = Color.LightGray, fontSize = 20.sp)
+                   Text(text = "Data Not Found or Check your Connection or Api Calls Limit Completed", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = Color.LightGray, fontSize = 20.sp)
                 }
                 }
             })
@@ -143,7 +143,7 @@ fun ActionBar(onClicks:(String)-> Unit) {
     val listDropDownItems = listOf<String>("Log out", "Settings Screen", "Favourite Screen")
     Row(modifier = Modifier
         .fillMaxWidth()
-        .padding(vertical = 10.dp, horizontal = 10.dp),verticalAlignment = Alignment.CenterVertically) {
+        .padding(start =10.dp, end = 10.dp, top = 15.dp),verticalAlignment = Alignment.CenterVertically) {
         Text(text = "Now News", fontFamily = FontFamily.Serif,
             fontSize = 25.sp, fontWeight = FontWeight.Bold,
             color = Color.Red,textAlign = TextAlign.Center)
