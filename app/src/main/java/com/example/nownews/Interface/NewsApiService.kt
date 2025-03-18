@@ -12,7 +12,7 @@ interface NewsApiService {
         @Query("category") category: String = "general",
         @Query("country") country: String = "pk",
         @Query("token") apiKey: String,
-        @Query("max") max: Int = 100
+        @Query("q") query:String = ""
     ): NewsResponse
 
 }
