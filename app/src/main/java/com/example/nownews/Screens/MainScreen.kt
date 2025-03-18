@@ -65,6 +65,7 @@ import java.util.Locale
 fun MainScreen(viewModel: NewsViewModel = viewModel(), navController: NavController) {
     val newsList by viewModel.newsState.collectAsState()
     val context = LocalContext.current
+    val isLoading = viewModel.isLoading.collectAsState().value
     Scaffold(
         topBar = {
             ActionBar(){
@@ -78,27 +79,26 @@ fun MainScreen(viewModel: NewsViewModel = viewModel(), navController: NavControl
             Column(modifier = Modifier.padding(innerPadding)) {
                 Spacer(modifier = Modifier.height(12.dp))
                 NewsCategories(onClick = { post->
-                    Toast.makeText(context, "category :$post", Toast.LENGTH_SHORT).show()
-                    viewModel.fetchNews(post.lowercase(Locale.ROOT), "pk", "992786c2b3ce3b6f6afea6acf66d4420" ,"")
+//                    Toast.makeText(context, "category :$post", Toast.LENGTH_SHORT).show()
+                    viewModel.fetchNews(post.lowercase(Locale.US), "pk", "992786c2b3ce3b6f6afea6acf66d4420" ,"")
                 },viewModel)
                 Spacer(modifier = Modifier.height(10.dp))
-                if (newsList?.articles?.isNotEmpty() == true) {
-                    newsList?.articles?.let { articles ->
+                if(isLoading){
+                    CircularProgressIndicator(strokeWidth = 2.dp,strokeCap = StrokeCap.Round, modifier = Modifier.align(Alignment.CenterHorizontally), color = Color.Red)
+                }
+                else if (newsList?.articles?.isNotEmpty() == true) {
                         LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                            items(articles) { article ->
+                            items(newsList!!.articles) { article ->
                                 NewsItem(article, navController)
                             }
                         }
                     }
-                }
                 else{
-                    if (viewModel.isLoading.collectAsState().value){
-                        CircularProgressIndicator(strokeWidth = 2.dp,strokeCap = StrokeCap.Round, modifier = Modifier.align(Alignment.CenterHorizontally), color = Color.Red)
-                    }
+                   Text(text = "Data Not Found or Check your Connection", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = Color.LightGray, fontSize = 20.sp)
                 }
+                }
+            })
 
-            }
-        })
 }
 
 
@@ -193,7 +193,7 @@ fun NewsCategories(onClick: (String) -> Unit, viewModel: NewsViewModel) {
                     isExpanded = false}) { Icon(Icons.Default.Search, contentDescription = "Search")}},
                 modifier = Modifier
                     .padding(horizontal = 10.dp)
-                    .height(48.dp),
+                    .height(58.dp),
 
             )
         }
