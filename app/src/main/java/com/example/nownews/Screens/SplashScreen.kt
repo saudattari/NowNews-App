@@ -31,11 +31,11 @@ fun SplashScreen(navController: NavController) {
         Box(
             modifier = Modifier
                 .padding(innerPadding).background(Color.White)
-                .fillMaxSize(),
+                .fillMaxSize().background(Color.White),
             contentAlignment = Alignment.Center
         ) {
             Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                Image(painter = painterResource(R.drawable.news), contentDescription = "New Image")
+                Image(painter = painterResource(R.drawable.newss), contentDescription = "New Image")
                 Text(
                     text = "Now News",
                     style = MaterialTheme.typography.titleLarge,
@@ -47,7 +47,7 @@ fun SplashScreen(navController: NavController) {
             }
             LaunchedEffect(Unit) {
                 delay(2000)
-                navController.navigate("mainScreen"){
+                navController.navigate("logIn"){
                     popUpTo("splashScreen"){
                         inclusive = true
                     }
