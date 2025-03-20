@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -61,7 +62,7 @@ fun Login(authViewModel: AuthViewModel = viewModel(), navController: NavControll
                 .padding(40.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center) {
-                Image(painter = rememberAsyncImagePainter(R.drawable.news),
+                Image(painter = rememberAsyncImagePainter(R.drawable.newss),
                     contentDescription = "New icon",
                     modifier = Modifier.size(100.dp))
                 Text(text = "Login", color = Color.Red, fontSize = 25.sp, fontWeight = FontWeight.Bold)
@@ -96,12 +97,16 @@ fun Login(authViewModel: AuthViewModel = viewModel(), navController: NavControll
                 if (firebaseUser != null) {
                     Text("Logged in as: ${firebaseUser?.email}", color = Color(0xFF015201))
                     authViewModel.setErrorEmpty()
-                    navController.navigate("mainScreen")
+                    navController.navigate("mainScreen"){
+                        popUpTo("logIn"){
+                            inclusive = true
+                        }
+                    }
                 }
-                Row(modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "Not Registered Yet:")
-                    TextButton(onClick = {navController.navigate("signUp")}){
-                        Text(text = "Sign Up", color = Color.Gray, textDecoration = TextDecoration.Underline)
+                Row(modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                    Text(text = "Don't have an account:", modifier = Modifier, textAlign = TextAlign.Center)
+                    TextButton(onClick = {navController.navigate("signUp");authViewModel.setErrorEmpty()}){
+                        Text(text = "Signup", color = Color.Gray, textDecoration = TextDecoration.Underline)
                     }
                 }
 
@@ -119,7 +124,8 @@ fun TextInputField(label: String,onValueChange: (String) -> Unit) {
             value = text, onValueChange = {
                 text = it
                  onValueChange(text)},
-            shape = RoundedCornerShape(10.dp)
+            shape = RoundedCornerShape(10.dp),
+            singleLine = true
         )
     }
 }

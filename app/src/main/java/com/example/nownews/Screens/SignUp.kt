@@ -62,7 +62,7 @@ fun SignUp(authViewModel: AuthViewModel = viewModel(),navController: NavControll
                 .padding(40.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center) {
-                Image(painter = rememberAsyncImagePainter(R.drawable.news),
+                Image(painter = rememberAsyncImagePainter(R.drawable.newss),
                     contentDescription = "New icon",
                     modifier = Modifier.size(100.dp))
                 Text(text = "SignUp", color = Color.Red, fontSize = 25.sp, fontWeight = FontWeight.Bold)
@@ -107,7 +107,7 @@ fun SignUp(authViewModel: AuthViewModel = viewModel(),navController: NavControll
                 }
                 Row(modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                     Text(text = "Already Have an Account:", modifier = Modifier, textAlign = TextAlign.Center)
-                    TextButton(onClick = {navController.navigate("logIn")}){
+                    TextButton(onClick = {navController.navigate("logIn");authViewModel.setErrorEmpty()}){
                         Text(text = "Login", color = Color.Gray, textDecoration = TextDecoration.Underline)
                     }
                 }

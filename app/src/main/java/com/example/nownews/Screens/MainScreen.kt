@@ -1,22 +1,29 @@
 package com.example.nownews.Screens
 
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -39,40 +46,44 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.toLowerCase
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.example.nownews.DataModel.Article
 import com.example.nownews.ViewModelStructure.NewsViewModel
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
-import com.example.nownews.DataModel.NewsResponse
 import com.example.nownews.R
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.example.nownews.ViewModelStructure.AuthViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.squareup.picasso.Picasso
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.Locale
 
 @Composable
 fun MainScreen(viewModel: NewsViewModel = viewModel(), navController: NavController) {
+    val authViewModel: AuthViewModel = viewModel()
     val newsList by viewModel.newsState.collectAsState()
     val context = LocalContext.current
     val isLoading = viewModel.isLoading.collectAsState().value
+    var showLogoutDialog by remember { mutableStateOf(false) }
     Scaffold(
+        modifier = Modifier.padding(top = 15.dp),
         topBar = {
             ActionBar(){
                 when(it){
-                    "Log out"->{/*TODO*/}
-                    "Settings Screen"->{/*TODO*/}
-                    "Favourite Screen"->{/*TODO*/}
+                    "Log out"->{showLogoutDialog = true }
+                    "Settings Screen"->{Toast.makeText(context, "Feature not available", Toast.LENGTH_SHORT).show()}
+                    "Favourite Screen"->{Toast.makeText(context, "Feature not available", Toast.LENGTH_SHORT).show()}
                 }
             } },
         content = {innerPadding->
@@ -89,7 +100,10 @@ fun MainScreen(viewModel: NewsViewModel = viewModel(), navController: NavControl
                 else if (newsList?.articles?.isNotEmpty() == true) {
                         LazyColumn(modifier = Modifier.fillMaxWidth()) {
                             items(newsList!!.articles) { article ->
-                                NewsItem(article, navController)
+                                NewsItem(article, navController){url->
+                                    val encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
+                                    navController.navigate("newsViewScreen/$encodedUrl")
+                                }
                             }
                         }
                     }
@@ -98,37 +112,46 @@ fun MainScreen(viewModel: NewsViewModel = viewModel(), navController: NavControl
                 }
                 }
             })
+    if (showLogoutDialog) {
+        ShowDialoge(
+            onDismiss = {showLogoutDialog  =false},
+            onSuccess = { FirebaseAuth.getInstance().signOut(); showLogoutDialog = false;navController.navigate("logIn"){
+                popUpTo("mainScreen"){
+                    inclusive = true
+                }
+            } }
+        )
+    }
+}
 
+@Composable
+fun ShowDialoge(onDismiss:()->Unit, onSuccess:()-> Unit) {
+    AlertDialog(modifier = Modifier,onDismissRequest = {onDismiss}, dismissButton = {Button(onClick = {onDismiss()}, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)) {Text(text = "Cancel") }}, confirmButton = {Button(onClick = {onSuccess()},colors = ButtonDefaults.buttonColors(containerColor = Color.Red)) {Text(text = "Yes") }}, title = {Text(text = "Log Out")}, icon = {Icon(Icons.Default.Warning, contentDescription = "Warning", tint = Color.Red, modifier = Modifier.size(60.dp))}, text = {Text(text = "    Are you sure you want to logout.", textAlign = TextAlign.Center)})
 }
 
 
-
 @Composable
-fun NewsItem(data: Article,navController: NavController) {
-    val imageUrl = data.image ?:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUrgu4a7W_OM8LmAuN7Prk8dzWXm7PVB_FmA&s"
+fun NewsItem(data: Article,navController: NavController, onItemClick:(String)-> Unit) {
+    val imageUrl = data.image?:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUrgu4a7W_OM8LmAuN7Prk8dzWXm7PVB_FmA&s"
 
-    val painter = if(data.image != null){rememberAsyncImagePainter(data.image)}else{R.drawable.news}
+//    val painter = if(data.image != null){rememberAsyncImagePainter(data.image)}else{R.drawable.news}
     Card(modifier = Modifier
         .fillMaxWidth()
+//        .height(120.dp)
         .padding(12.dp)
         .clickable {
-            navController.navigate("newsViewScreen/${data.url}")
+            onItemClick(data.url.toString())
         }
     )
     {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            AsyncImage(
-                model = imageUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.size(100.dp)
-            )
+                LoadImage(imageUrl)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 10.dp, end = 8.dp, bottom = 10.dp, top = 8.dp)
             ) {
-                Text(text = data.title ?: "", fontSize = 16.sp, fontFamily = FontFamily.Serif)
+                Text(text = data.title ?: "", fontSize = 16.sp, fontFamily = FontFamily.Serif, maxLines = 3)
                 Spacer(modifier = Modifier.weight(1f))
                 Text(text = data.source?.name ?: "", fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 2)
             }
@@ -143,7 +166,7 @@ fun ActionBar(onClicks:(String)-> Unit) {
     val listDropDownItems = listOf<String>("Log out", "Settings Screen", "Favourite Screen")
     Row(modifier = Modifier
         .fillMaxWidth()
-        .padding(start =10.dp, end = 10.dp, top = 15.dp),verticalAlignment = Alignment.CenterVertically) {
+        .padding(start = 10.dp, end = 10.dp, top = 15.dp),verticalAlignment = Alignment.CenterVertically) {
         Text(text = "Now News", fontFamily = FontFamily.Serif,
             fontSize = 25.sp, fontWeight = FontWeight.Bold,
             color = Color.Red,textAlign = TextAlign.Center)
@@ -177,7 +200,8 @@ fun NewsCategories(onClick: (String) -> Unit, viewModel: NewsViewModel) {
     val list  = listOf("GENERAL", "BUSINESS" ,"TECHNOLOGY", "ENTERTAINMENT", "SPORTS", "SCIENCE", "HEALTH","WORLD")
     Row(modifier = Modifier
         .fillMaxWidth()
-        .horizontalScroll(rememberScrollState())) {
+        .horizontalScroll(rememberScrollState()),
+        verticalAlignment = Alignment.CenterVertically) {
         if(isExpanded){
             OutlinedTextField(
                 value = SerachQuery,
@@ -194,12 +218,13 @@ fun NewsCategories(onClick: (String) -> Unit, viewModel: NewsViewModel) {
                 modifier = Modifier
                     .padding(horizontal = 10.dp)
                     .height(58.dp),
+                shape = RoundedCornerShape(25.dp)
 
             )
         }
         else{
             IconButton(onClick = { isExpanded = true }) {
-                Icon(Icons.Default.Search, contentDescription = "Search Icon", modifier = Modifier.size(25.dp))
+                Icon(Icons.Default.Search, contentDescription = "Search Icon", modifier = Modifier.size(25.dp), tint = Color.Red)
             }
         }
 //        if(!isExpanded){
@@ -220,4 +245,28 @@ fun NewsCategories(onClick: (String) -> Unit, viewModel: NewsViewModel) {
             }
         }
     }
+}
+
+
+@Composable
+fun LoadImage(imageUrl:String){
+    AndroidView(
+        factory = {
+            ImageView(it).apply {
+                scaleType = ImageView.ScaleType.CENTER_CROP
+            }
+        },
+        modifier = Modifier
+            .width(120.dp)
+            .fillMaxHeight(),
+        update = {
+            Picasso.get()
+                .load(imageUrl)
+                .placeholder(R.drawable.newss)
+                .error(R.drawable.notfound)
+                .resize(120,120)
+                .centerCrop()
+                .into(it)
+        }
+    )
 }

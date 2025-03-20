@@ -31,8 +31,8 @@ fun NavigationController(navController: NavHostController) {
             MainScreen(viewModel, navController)
         }
         composable ("newsViewScreen/{url}"){
-            val url = it.arguments?.getString("url") ?:""
-            NewsViewScreen(url)
+            val url = it.arguments?.getString("url")
+            NewsViewScreen(url.toString())
         }
     }
 }

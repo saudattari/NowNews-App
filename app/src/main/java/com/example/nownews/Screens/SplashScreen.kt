@@ -23,10 +23,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.nownews.R
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(navController: NavController) {
+    val fireBaseAuth = FirebaseAuth.getInstance()
     Scaffold { innerPadding ->
         Box(
             modifier = Modifier
@@ -47,11 +49,18 @@ fun SplashScreen(navController: NavController) {
             }
             LaunchedEffect(Unit) {
                 delay(2000)
+                if (fireBaseAuth.currentUser!=null){
+                    navController.navigate("mainScreen"){
+                        popUpTo("splashScreen"){
+                            inclusive = true
+                        }
+                    }
+                }else{
                 navController.navigate("logIn"){
                     popUpTo("splashScreen"){
                         inclusive = true
                     }
-                }
+                } }
             }
 
         }

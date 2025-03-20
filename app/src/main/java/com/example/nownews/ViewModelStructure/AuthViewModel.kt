@@ -46,4 +46,8 @@ class AuthViewModel: ViewModel() {
     fun setErrorEmpty(){
         _error.value = ""
     }
+    fun logOut(){
+        FirebaseAuth.getInstance().signOut()
+        _authUser.value = null
+    }
 }

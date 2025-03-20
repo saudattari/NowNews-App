@@ -78,4 +78,7 @@ dependencies {
 
     val nav_version = "2.8.9"
     implementation("androidx.navigation:navigation-compose:$nav_version")
+
+//    picasso library
+    implementation ("com.squareup.picasso:picasso:2.8")
 }
